@@ -1,25 +1,20 @@
 <?php
 require ('../../../dbConfig.php'); 
-require ('users.php'); 
+require ('../../../authentication.php');
+require ('users.php');
 
-//////// new class  faisal 
+// createing objects
 $authorization = apache_request_headers()["Authorization"];
-if($authorization==1){
-  $dbUserName="yavxse";
-}elseif($authorization==2){
-  $dbUserName="faisal";
-  if($_SERVER['REQUEST_METHOD'] != 'GET'){
-    die("Access denied for user  " . $dbUserName );
-  }
-}else{
-  die("You don’t have authorization");
-}
-////////////////////////////////////////
+$authentication = new authentication($authorization);
+$dbUserName = $authentication->authorization();
+$conn = new usersConfig($dbUserName);
+$user = new users($conn->connect());
 
-//$dbUserName="yavxse";
-$where = " ";
+// declaring variables
+$where = '';
+$missingData = "Data is missing";
+$missingId = "Id is missing";
 $andCondition = "and";
-$orCondition = "or";
 $requestMethod = $_SERVER['REQUEST_METHOD'];
 $requestParameters = json_decode(file_get_contents('php://input'),true);
 
@@ -30,55 +25,41 @@ if(isset($requestParameters['id'])){
   $responseId=$requestParameters['id'];
 }
 
-
-$conn = new usersConfig($dbUserName);
-$user = new users($conn->connect());
-
-
+//executing 
 if ($requestMethod == 'GET') {
   if(!empty($_GET)){
-    getValues($andCondition);
+    $where = getValues($andCondition);
     $user->read($where);
   }else{
     $user->read($where);
   }
 
 }elseif($requestMethod == 'POST'){
-  if(isset($responseName)&&isset($responseId)){      //TDDO function
+  if(isset($responseName)&&isset($responseId)){      
     $user->create($responseName,$responseId);
   }else{
-    echo "Data is missing";
+    echo $missingData;
   }
   
 }elseif($requestMethod == 'DELETE'){
-  if(isset($responseId)){                           //TDDO function
+  if(isset($responseId)){                          
     $user->delete($responseId);
   }else{
-    echo "Id is missing";
+    echo $missingId;
   }
 
 }elseif($requestMethod == 'PUT'){
-  if(isset($responseName)&&isset($responseId)){       //TDDO function
+  if(isset($responseName)&&isset($responseId)){      
     $user->update($responseName,$responseId);
   }else{
-    echo "Data is missing";
+    echo $missingData;
   }
 }
 
 
 
-
-
-
-
-
-
-
-
-
-///////////////////////////////
+//functions
 function getValues($condition){
-  global $where;
   $resourcesLength = count($_GET);
   $where = "WHERE ";
   if($condition == "and"){
@@ -87,7 +68,7 @@ function getValues($condition){
         $where .= "$key = $value AND ";
         $resourcesLength--;
       }else{
-        $where .= "$key = $value";
+        return $where .= "$key = $value";
      }
     }
   }
