@@ -1,5 +1,5 @@
 <?php
-require ('../../../dbConfig.php'); 
+require ('../../../usersDbConfig.php'); 
 require ('../../../authentication.php');
 require ('users.php'); 
 
