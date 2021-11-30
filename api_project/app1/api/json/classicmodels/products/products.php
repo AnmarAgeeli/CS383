@@ -1,6 +1,7 @@
 <?php
 class products{
     private $table;
+    private $productLinesTable; 
     private $productName; //get
     private $productCode; //get
     private $productLine; //get
@@ -9,7 +10,7 @@ class products{
     private $productDescription;
     private $quantityInStock; //get
     private $buyPrice; //get
-    private $MSRP; 
+    private $MSRP;
     private $conn;
     public $s404 = "404";
     public $m404 = "Not found";
@@ -27,16 +28,23 @@ class products{
         $this->quantityInStock = "quantityInStock";
         $this->buyPrice = "buyPrice";
         $this->MSRP = "MSRP"; 
+        $this->productLinesTable = "productlines"; 
         $this->conn = $conn;
     }
 
-    public function create($createString,$primaryKey){
+    public function create($createString,$primaryKey,$productLine){
         $query = "SELECT * FROM $this->table WHERE $this->productCode='$primaryKey'";
         $result = $this->conn->query($query);
         if(!($result->fetch(PDO::FETCH_ASSOC))){
-            $query = "INSERT INTO $this->table $createString";
+            $query = "SELECT $this->productLine FROM $this->productLinesTable WHERE $this->productLine='$productLine'";
             $result = $this->conn->query($query);
-            $this->jsonResponse($this->s200, "A new product has been added", null);            
+            if($result->fetch(PDO::FETCH_ASSOC)){
+                $query = "INSERT INTO $this->table $createString";
+                $result = $this->conn->query($query);
+                $this->jsonResponse($this->s200, "A new product has been added", null); 
+            }else{
+                $this->jsonResponse($this->s404, "productLine does not exist", null);
+            }           
         }else{
             $this->jsonResponse($this->s404, "productCode already exist", null);
         }

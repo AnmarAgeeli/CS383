@@ -99,7 +99,7 @@ if ($requestMethod == 'GET') {
 }elseif($requestMethod == 'POST'){
   if(!$missingData){ 
     $create =  setValues($responseParameters); 
-    $product->create($create, $responseParameters[$productCode]);
+    $product->create($create, $responseParameters[$productCode],$responseParameters[$productLine]);
   }else{
     echo $missingMassege . $missingData;
   }
