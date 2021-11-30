@@ -111,7 +111,7 @@ class products{
         return $this->productDescription;
     }
     public function getQuantityInStock(){
-        return $this->quantitInStock;
+        return $this->quantityInStock;
     }
     public function getBuyPrice(){
         return $this->buyPrice;
