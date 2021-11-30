@@ -19,15 +19,15 @@ $andCondition = "and";
 $requestMethod = $_SERVER['REQUEST_METHOD'];
 $requestParameters = json_decode(file_get_contents('php://input'),true);
 $responseParameters = array();
-$productName = 'productName'; //get
-$productCode = 'productCode'; //get
-$productLine = 'productLine'; //get
-$productScale = 'productScale';
-$productVendor = 'productVendor';
-$productDescription = 'productDescription';
-$quantityInStock = 'quantityInStock'; //get
-$buyPrice = 'buyPrice'; //get
-$MSRP = 'MSRP'; 
+$productName = $product->getProductName(); 
+$productCode = $product->getProductCode(); 
+$productLine = $product->getProductLine(); 
+$productScale = $product->getProductScale();
+$productVendor = $product->getProductVendor();
+$productDescription = $product->getProductDescription();
+$quantityInStock = $product->getQuantityInStock(); 
+$buyPrice = $product->getBuyPrice(); 
+$MSRP = $product->getMsrp(); 
 
 
 //code
@@ -99,8 +99,6 @@ if ($requestMethod == 'GET') {
 }elseif($requestMethod == 'POST'){
   if(!$missingData){ 
     $create =  setValues($responseParameters); 
-    //print_r($create);
-    //print_r($responseParameters[$productCode]);
     $product->create($create, $responseParameters[$productCode]);
   }else{
     echo $missingMassege . $missingData;

@@ -90,9 +90,35 @@ class products{
         $response['message'] = $message;
         $response['data'] = $data;
         print_r(json_encode($response));
-        //json_encode($response);
     }
 
+    public function getProductName(){
+        return $this->productName;
+    }
+    public function getProductCode(){
+        return $this->productCode;
+    }
+    public function getProductScale(){
+        return $this->productScale;
+    }
+    public function getProductLine(){
+        return $this->productLine;
+    }
+    public function getProductVendor(){
+        return $this->productVendor;
+    }
+    public function getProductDescription(){
+        return $this->productDescription;
+    }
+    public function getQuantityInStock(){
+        return $this->quantitInStock;
+    }
+    public function getBuyPrice(){
+        return $this->buyPrice;
+    }
+    public function getMsrp(){
+        return $this->MSRP;
+    }
 
 }
 
