@@ -1,89 +1,56 @@
 <?php
 require ('../../../../classicmodelsDbConfig.php'); 
 require ('../../../../authentication.php');
-require ('products.php');
+require ('product_lines.php');
 
 // createing objects
 $authorization = apache_request_headers()["Authorization"];
 $authentication = new authentication($authorization);
 $dbUserName = $authentication->authorization();
 $conn = new classicmodelsConfig($dbUserName);
-$product = new products($conn->connect());
+$product = new product_lines($conn->connect());
 
 // declaring variables
 $where = '';
 $missingMassege = "The following data are missing: ";
+$optionalMasseege = "(Optional) The following data are missing: ";
+$optionalData = "";
 $missingData = "";
 $missingId = "";
 $andCondition = "and";
 $requestMethod = $_SERVER['REQUEST_METHOD'];
 $requestParameters = json_decode(file_get_contents('php://input'),true);
 $responseParameters = array();
-$productName = $product->getProductName(); 
-$productCode = $product->getProductCode(); 
 $productLine = $product->getProductLine(); 
-$productScale = $product->getProductScale();
-$productVendor = $product->getProductVendor();
-$productDescription = $product->getProductDescription();
-$quantityInStock = $product->getQuantityInStock(); 
-$buyPrice = $product->getBuyPrice(); 
-$MSRP = $product->getMsrp(); 
+$textDescription = $product->getTextDescription();
+$htmlDescription = $product->getHtmlDescription(); 
+$image = $product->getImage(); 
 
 
-//code
-if(isset($requestParameters[$productCode])){
-  $responseParameters[$productCode]=$requestParameters[$productCode]; 
-}else{
-  $missingData.="$productCode, ";
-  $missingId = "$productCode";
-}
-//Name
-if(isset($requestParameters[$productName])){
-  $responseParameters[$productName]=$requestParameters[$productName]; 
-}else{
-  $missingData.="$productName, ";
-}
 //line
 if(isset($requestParameters[$productLine])){
   $responseParameters[$productLine]=$requestParameters[$productLine]; 
 }else{
   $missingData.="$productLine, ";
+  $missingId.="$productLine, ";
 }
-//scale
-if(isset($requestParameters[$productScale])){
-  $responseParameters[$productScale]=$requestParameters[$productScale]; 
+//text
+if(isset($requestParameters[$textDescription])){
+  $responseParameters[$textDescription]=$requestParameters[$textDescription]; 
 }else{
-  $missingData.="$productScale, ";
+  $missingData.="$textDescription, ";
 }
-//vendor
-if(isset($requestParameters[$productVendor])){
-  $responseParameters[$productVendor]=$requestParameters[$productVendor]; 
+//Html
+if(isset($requestParameters[$htmlDescription])){
+    $responseParameters[$htmlDescription]=$requestParameters[$htmlDescription]; 
+  }else{
+    $optionalData.="$htmlDescription, ";
+  }
+//image
+if(isset($requestParameters[$image])){
+  $responseParameters[$image]=$requestParameters[$image]; 
 }else{
-  $missingData.="$productVendor, ";
-}
-//Description
-if(isset($requestParameters[$productDescription])){
-  $responseParameters[$productDescription]=$requestParameters[$productDescription]; 
-}else{
-  $missingData.="$productDescription, ";
-}
-//quantity
-if(isset($requestParameters[$quantityInStock])){
-  $responseParameters[$quantityInStock]=$requestParameters[$quantityInStock]; 
-}else{
-  $missingData.="$quantityInStock, ";
-}
-//price
-if(isset($requestParameters[$buyPrice])){
-  $responseParameters[$buyPrice]=$requestParameters[$buyPrice]; 
-}else{
-  $missingData.="$buyPrice, ";
-}
-//MSRP
-if(isset($requestParameters[$MSRP])){
-  $responseParameters[$MSRP]=$requestParameters[$MSRP]; 
-}else{
-  $missingData.="$MSRP, ";
+  $optionalData.="$image, ";
 }
 
 
@@ -97,24 +64,30 @@ if ($requestMethod == 'GET') {
   }
 
 }elseif($requestMethod == 'POST'){
-  if(!$missingData){ 
-    $create =  setValues($responseParameters); 
-    $product->create($create, $responseParameters[$productCode],$responseParameters[$productLine]);
+  if(!$missingData){
+    if(!$optionalData){
+        $create =  setValues($responseParameters); 
+        $product->create($create,$responseParameters[$productLine]);
+    }else{
+        echo $optionalMassege . $optionalData;
+        $create =  setValues($responseParameters); 
+        $product->create($create,$responseParameters[$productLine]);
+    }
   }else{
     echo $missingMassege . $missingData;
   }
   
 }elseif($requestMethod == 'DELETE'){
-  if(isset($responseParameters[$productCode])){                          
-    $product->delete($responseParameters[$productCode]);
+  if(isset($responseParameters[$productLine])){                          
+    $product->delete($responseParameters[$productLine]);
   }else{
     echo $missingMassege . $missingId;
   }
 
 }elseif($requestMethod == 'PUT'){
-  if(isset($responseParameters) && isset($responseParameters[$productCode])){  
+  if(isset($responseParameters) && isset($responseParameters[$productLine])){  
     $update = updateValues($responseParameters);    
-    $product->update($update,$responseParameters[$productCode]);
+    $product->update($update,$responseParameters[$productLine]);
   }else{
     echo $missingMassege . $missingId;
   }
@@ -164,8 +137,7 @@ function updateValues($responseParameters){
       $resourcesLength--;
     }else{
       $set .= "$key = '$value' ";
-      return $set ;
-     
+      return $set ;    
     }
   }
 }
