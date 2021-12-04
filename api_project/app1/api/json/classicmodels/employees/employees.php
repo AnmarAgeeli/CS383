@@ -1,6 +1,7 @@
 <?php
 class employees{
     private $table;    
+    private $officesTable;
     private $employeeNumber;
     private $lastName; //get
     private $firstName; //get
@@ -9,6 +10,10 @@ class employees{
     private $officeCode; //get
     private $reportsTo;
     private $jobTitle; //get
+    private $offies;
+    private $city;
+    private $country;
+    private $phone;
     private $conn;
     public $s404 = "404";
     public $m404 = "Not found";
@@ -17,6 +22,7 @@ class employees{
 
     public function __construct($conn){
         $this->table = "employees";
+        $this->officesTable = "offices";
         $this->lastName = "lastName";
         $this->employeeNumber = "employeeNumber";
         $this->firstName = "firstName";
@@ -30,6 +36,9 @@ class employees{
         $this->country = "country";
         $this->salesRepEmployeeNumber = "salesRepEmployeeNumber";
         $this->creditLimit = "creditLimit"; 
+        $this->city = "city";
+        $this->phone = "phone";
+        $this->country = "country";
         $this->conn = $conn;
     }
 
@@ -47,8 +56,13 @@ class employees{
 
     public function read($parameters){
         $records=[];
-        $query=  "SELECT $this->firstName, $this->lastName, $this->officeCode, 
-        $this->jobTitle FROM $this->table $parameters";
+        $query=  "SELECT $this->firstName, $this->lastName, $this->table.$this->officeCode, 
+        $this->jobTitle, $this->city, $this->phone, $this->country 
+        FROM $this->table
+        INNER JOIN $this->officesTable
+        ON $this->table.$this->officeCode = $this->officesTable.$this->officeCode
+        $parameters";
+
         $result = $this->conn->query($query);
         while($row = $result->fetch(PDO::FETCH_ASSOC)){
             $records[]=$row;
@@ -67,9 +81,9 @@ class employees{
         if($result->fetch(PDO::FETCH_ASSOC)){
             $query = "UPDATE $this->table $updateString WHERE $this->employeeNumber='$employeeNumber'";
             $result = $this->conn->query($query);
-            $this->jsonResponse($this->s200, "Customer has been Updated", null);            
+            $this->jsonResponse($this->s200, "Employee has been Updated", null);            
         }else{
-            $this->jsonResponse($this->s404, "employeeNumber does not exist", null);
+            $this->jsonResponse($this->s404, "EmployeeNumber does not exist", null);
         }
     }
 
@@ -80,9 +94,9 @@ class employees{
         if($result->fetch(PDO::FETCH_ASSOC)){
             $query = "DELETE FROM $this->table WHERE $this->employeeNumber='$employeeNumber'";
             $result = $this->conn->query($query);
-            $this->jsonResponse($this->s200, "Customer has been deleted", null);            
+            $this->jsonResponse($this->s200, "Employee has been deleted", null);            
         }else{
-            $this->jsonResponse($this->s404, "employeeNumber does not exist", null);
+            $this->jsonResponse($this->s404, "EmployeeNumber does not exist", null);
         }
     }
 
