@@ -1,6 +1,7 @@
 <?php
 require ('../../../../classicmodelsDbConfig.php'); 
 require ('../../../../authentication.php');
+require ('../../../../queryCreator.php');
 require ('products.php');
 
 // createing objects
@@ -9,6 +10,7 @@ $authentication = new authentication($authorization);
 $dbUserName = $authentication->authorization();
 $conn = new classicmodelsConfig($dbUserName);
 $product = new products($conn->connect());
+$query = new queryCreator();
 
 // declaring variables
 $where = '';
@@ -90,7 +92,7 @@ if(isset($requestParameters[$MSRP])){
 //executing 
 if ($requestMethod == 'GET') {
   if(!empty($_GET)){
-    $where = getValues($andCondition);
+    $where = $query->getValues($andCondition);
     $product->read($where);
   }else{
     $product->read($where);
@@ -98,7 +100,7 @@ if ($requestMethod == 'GET') {
 
 }elseif($requestMethod == 'POST'){
   if(!$missingData){ 
-    $create =  setValues($responseParameters); 
+    $create =  $query->setValues($responseParameters); 
     $product->create($create, $responseParameters[$productCode],$responseParameters[$productLine]);
   }else{
     echo $missingMassege . $missingData;
@@ -113,7 +115,7 @@ if ($requestMethod == 'GET') {
 
 }elseif($requestMethod == 'PUT'){
   if(isset($responseParameters) && isset($responseParameters[$productCode])){  
-    $update = updateValues($responseParameters);    
+    $update = $query->updateValues($responseParameters);    
     $product->update($update,$responseParameters[$productCode]);
   }else{
     echo $missingMassege . $missingId;
@@ -122,51 +124,4 @@ if ($requestMethod == 'GET') {
 
 
 
-//functions
-function getValues($condition){
-  $resourcesLength = count($_GET);
-  $where = "WHERE ";
-  if($condition == "and"){
-    foreach($_GET as $key => $value){
-      if($resourcesLength > 1){
-        $where .= "$key = $value AND ";
-        $resourcesLength--;
-      }else{
-        return $where .= "$key = $value";
-     }
-    }
-  }
-}
-
-function setValues($responseParameters){
-  $resourcesLength = count($responseParameters);
-  $columns = "(";
-  $values = "VALUES (";
-  foreach($responseParameters as $key => $value){
-    if($resourcesLength > 1){
-      $columns .= "$key,";
-      $values .= "'$value',";
-      $resourcesLength--;
-    }else{
-      $columns .= "$key) ";
-      $values .= "'$value')";
-      return $columns . $values;
-    }
-  }
-}
-
-function updateValues($responseParameters){
-  $resourcesLength = count($responseParameters);
-  $set = "SET ";
-  foreach($responseParameters as $key => $value){
-    if($resourcesLength > 1){
-      $set .= "$key = '$value',";
-      $resourcesLength--;
-    }else{
-      $set .= "$key = '$value' ";
-      return $set ;
-     
-    }
-  }
-}
  ?>

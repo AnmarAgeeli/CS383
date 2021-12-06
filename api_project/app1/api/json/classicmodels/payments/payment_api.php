@@ -1,6 +1,7 @@
 <?php
 require ('../../../../classicmodelsDbConfig.php'); 
 require ('../../../../authentication.php');
+require ('../../../../queryCreator.php');
 require ('payments.php');
 
 // createing objects
@@ -8,7 +9,8 @@ $authorization = apache_request_headers()["Authorization"];
 $authentication = new authentication($authorization);
 $dbUserName = $authentication->authorization();
 $conn = new classicmodelsConfig($dbUserName);
-$payment = new payments($conn->connect()); //////
+$payment = new payments($conn->connect()); 
+$query = new queryCreator();
 
 // declaring variables
 $where = '';
@@ -57,7 +59,7 @@ if(isset($requestParameters[$amount])){
 //executing 
 if ($requestMethod == 'GET') {
   if(!empty($_GET)){
-    $where = getValues($andCondition);
+    $where = $query->getValues($andCondition);
     $payment->read($where);
   }else{
     $payment->read($where);
@@ -66,11 +68,11 @@ if ($requestMethod == 'GET') {
 }elseif($requestMethod == 'POST'){
   if(!$missingData){
     if(!$optionalData){
-        $create =  setValues($responseParameters); 
+        $create =  $query->setValues($responseParameters); 
         $payment->create($create,$responseParameters[$checkNumber]);
     }else{
         echo $optionalMassege . $optionalData;
-        $create =  setValues($responseParameters); 
+        $create =  $query->setValues($responseParameters); 
         $payment->create($create,$responseParameters[$checkNumber]);
     }
   }else{
@@ -86,7 +88,7 @@ if ($requestMethod == 'GET') {
 
 }elseif($requestMethod == 'PUT'){
   if(isset($responseParameters) && isset($responseParameters[$checkNumber])){  
-    $update = updateValues($responseParameters);    
+    $update = $query->updateValues($responseParameters);    
     $payment->update($update,$responseParameters[$checkNumber]);
   }else{
     echo $missingMassege . $missingId;
@@ -94,51 +96,4 @@ if ($requestMethod == 'GET') {
 }
 
 
-
-//functions
-function getValues($condition){
-  $resourcesLength = count($_GET);
-  $where = "WHERE ";
-  if($condition == "and"){
-    foreach($_GET as $key => $value){
-      if($resourcesLength > 1){
-        $where .= "$key = $value AND ";
-        $resourcesLength--;
-      }else{
-        return $where .= "$key = $value";
-     }
-    }
-  }
-}
-
-function setValues($responseParameters){
-  $resourcesLength = count($responseParameters);
-  $columns = "(";
-  $values = "VALUES (";
-  foreach($responseParameters as $key => $value){
-    if($resourcesLength > 1){
-      $columns .= "$key,";
-      $values .= "'$value',";
-      $resourcesLength--;
-    }else{
-      $columns .= "$key) ";
-      $values .= "'$value')";
-      return $columns . $values;
-    }
-  }
-}
-
-function updateValues($responseParameters){
-  $resourcesLength = count($responseParameters);
-  $set = "SET ";
-  foreach($responseParameters as $key => $value){
-    if($resourcesLength > 1){
-      $set .= "$key = '$value',";
-      $resourcesLength--;
-    }else{
-      $set .= "$key = '$value' ";
-      return $set ;    
-    }
-  }
-}
  ?>
